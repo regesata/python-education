@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+astroid = "==2.6.6"
+attrs = "==21.2.0"
+iniconfig = "==1.1.1"
+isort = "==5.9.3"
+lazy-object-proxy = "==1.6.0"
+mccabe = "==0.6.1"
+numpy = "==1.21.2"
+pluggy = "==0.13.1"
+py = "==1.10.0"
+pylint = "==2.9.6"
+pyparsing = "==2.4.7"
+pytest = "==6.1.2"
+toml = "==0.10.2"
+wrapt = "==1.12.1"
+flask = "*"
+django = "==3.2"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
