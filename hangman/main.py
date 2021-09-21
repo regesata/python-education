@@ -170,9 +170,9 @@ while True:
     menu_choice = int(input())
     if menu_choice == 1:
         lifes = LIFES_INIT
-        word_in_game_str = pick_word()
-        used_letters_list = []
-        guessed_letters_list = ["_"] * len(word_in_game_str)
+        word_in_game_str = pick_word()   # hidden word
+        used_letters_list = []           # list of used letters
+        guessed_letters_list = ["_"] * len(word_in_game_str)  # hidden word presentation
         while True:
             draw_hangman(lifes)
             if lifes == 0:  # check loose condition and exit
@@ -183,6 +183,9 @@ while True:
                 print(f"The word is: {word_in_game_str}")
                 input("Press Enter to return to the main menu")
                 break
+
+            print(" ".join(guessed_letters_list))
+
             if "_" not in guessed_letters_list:  # check win condition
                 print("You win!")
                 with open("used_words.txt", "a") as f:
@@ -190,10 +193,9 @@ while True:
                     f.close()
                 input("Press enter to return to the main menu")
                 break
-            print(" ".join(guessed_letters_list))
             print(f"You have: {lifes} tries. Not matched letters: {' '.join(used_letters_list) }")
             guess_letter = input("enter a letter\n")
-            if is_letter(guess_letter):
+            if is_letter(guess_letter) and guess_letter not in used_letters_list:
                 temp_list = find_all(word_in_game_str, guess_letter)[:]
                 if len(temp_list) > 0:
                     for i in temp_list:
