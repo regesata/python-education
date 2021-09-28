@@ -5,7 +5,6 @@ import datetime
 
 
 class Engine:
-
     """
     Parent abstract class for all engines.
 
@@ -13,8 +12,8 @@ class Engine:
     ----------
     type_of_engine : str
         sets type of engine diesel or gasoline
-    volume :float
-        sets volume of engine, cant be 0 or negative
+    power :float
+        sets power of engine, cant be 0 or negative
 
     Methods
     -------
@@ -31,6 +30,8 @@ class Engine:
         self.power = power
 
     def __setattr__(self, key, value):
+        """This method checks 'power' attribute, no prevent its value
+         set in zero or less"""
         if key == "power" and value <= 0:
             raise Exception("Power of engine must be positive number")
         self.__dict__[key] = value
@@ -46,6 +47,7 @@ class Engine:
 
 class ICombustionEngine(Engine):
     """Class describes all inner combustion engines"""
+
     def __init__(self, type_of_engine: str, power: int, cylinders_count: int):
         Engine.__init__(self, type_of_engine, power)
         self.cylinders_count = cylinders_count
@@ -64,21 +66,14 @@ class ElectricMotor(Engine):
         super().__init__(type_of_engine, power)
 
     def start_engine(self):
+        """Starts electric motor"""
+
         print(f"{self.type_of_engine} electric motor started")
 
     def stop_engine(self):
+        """Stops electric motor"""
+
         print(f"{self.type_of_engine} electric motor stopped")
-
-
-class HybridMotor(ICombustionEngine, ElectricMotor):
-    """Class describes hybrid types of motor"""
-
-    def __init__(self, ic_motor_type: str, ic_power: int, cylinders_count: int,
-                 e_motor_type: str, e_motor_power: int):
-        ElectricMotor.__init__(self, e_motor_type, e_motor_power)
-        ICombustionEngine.__init__(self, ic_motor_type, ic_power, cylinders_count)
-        self.e_motor_type = e_motor_type
-        self.e_motor_power = e_motor_power
 
 
 class SpecialDevice:
@@ -97,6 +92,7 @@ class SpecialDevice:
     dev_name : str
         name of special device
     """
+
     def __init__(self, dev_name):
         self.dev_name = dev_name
 
@@ -108,7 +104,6 @@ class SpecialDevice:
 
 
 class Transport:
-
     _transport_count = []
     """
     Parent class for all types of cars
@@ -135,6 +130,7 @@ class Transport:
         Must be realized in child classes
 
         """
+
     @classmethod
     def get_transport_count(cls) -> list:
         """
@@ -185,11 +181,38 @@ class Transport:
             print("Tiers changes to winter")
 
 
+class FlyingTransport(abc.ABC):
+    """
+    Class provides ability to fly for transport
+    Methods
+    -------
+    run():
+        run in the air
+
+    """
+    def run(self):
+        print(f"{self.name} is flying")
+
+
+class Airplane(FlyingTransport, Transport, ICombustionEngine):
+    """Class describes airplane"""
+
+    def __init__(self, name: str, fuel_tank: int, wheels_count: int, fuel_tank_level: int,
+                 type_engine: str, power: int, cylinders_count: int):
+        Transport.__init__(self, name, fuel_tank, wheels_count, fuel_tank_level)
+        ICombustionEngine.__init__(self, type_engine, power, cylinders_count)
+        FlyingTransport.__init__(self)
+
+    def run(self):
+        FlyingTransport.run(self)
+
+
 class Car(Transport, ICombustionEngine):
     """
     Class describes car for personal use with inner combustion motor
 
     """
+
     def __init__(self, name: str, fuel_tank_vol: int, wheels_count: int,
                  fuel_tank_level: int, engine_type: str, engine_power: int, body_type: str,
                  engine_cylinder_count: int):
@@ -198,15 +221,15 @@ class Car(Transport, ICombustionEngine):
         self.body_type = body_type
 
     def run(self):
-        """Runs car on the amount of miles"""
+        """Runs car"""
         print(f"{self.name} runs")
 
     @property
     def show_info(self):
         return f"Name: {self.name}, fuel tank volume: {self.fuel_tank_vol}, wheel count: {self.wheels_count}" \
-                f" fuel tank level: {self.fuel_tank_level}, engine type: {self.type_of_engine}," \
-                f" engine power: {self.power}, cylinders: {self.cylinders_count}," \
-                f" body type: {self.body_type}, wheel type: {self.tiers_type}"
+               f" fuel tank level: {self.fuel_tank_level}, engine type: {self.type_of_engine}," \
+               f" engine power: {self.power}, cylinders: {self.cylinders_count}," \
+               f" body type: {self.body_type}, wheel type: {self.tiers_type}"
 
 
 class Bus(Transport, ElectricMotor):
@@ -225,24 +248,21 @@ class Bus(Transport, ElectricMotor):
     @property
     def show_info(self):
         return f"Name: {self.name}, battery capacity: {self.fuel_tank_vol}, wheel count: {self.wheels_count}" \
-                f" charge level: {self.fuel_tank_level}, engine type: {self.type_of_engine}," \
-                f" engine power: {self.power}, count of seats: {self.seats_amount}, wheel type: {self.tiers_type}"
+               f" charge level: {self.fuel_tank_level}, engine type: {self.type_of_engine}," \
+               f" engine power: {self.power}, count of seats: {self.seats_amount}, wheel type: {self.tiers_type}"
 
 
-class SpecialAuto(Transport, HybridMotor, SpecialDevice):
+class SpecialAuto(Transport, ICombustionEngine, SpecialDevice):
     """
     Class realize some special auto with hybrid motor (Concrete mixer for exmpl)
     """
 
     def __init__(self, name: str, fuel_tank_vol: int, wheels_count: int,
                  fuel_tank_level: int, ic_engine_type: str, ic_engine_power: int, ic_cylinders_count: int,
-                 em_type: str, em_power, battery_cap: int, curr_charge: int,
                  dev_name: str):
-        self.battery_cap = battery_cap
-        self.curr_charge = curr_charge
         Transport.__init__(self, name, fuel_tank_vol, wheels_count, fuel_tank_level)
-        HybridMotor.__init__(self, ic_engine_type, ic_engine_power, ic_cylinders_count,
-                             em_type, em_power)
+        ICombustionEngine.__init__(self, ic_engine_type, ic_engine_power, ic_cylinders_count)
+
         SpecialDevice.__init__(self, dev_name)
 
     def run(self):
@@ -254,30 +274,50 @@ class SpecialAuto(Transport, HybridMotor, SpecialDevice):
                f" fuel tank level: {self.fuel_tank_level}, " \
                f"combustion engine type: {self.type_of_engine}," \
                f" combustion engine power: {self.power}, cylinders: {self.cylinders_count} \n " \
-               f"electric motor type: {self.e_motor_type}, " \
-               f"electric motor power: {self.e_motor_power} " \
-               f"device name: {self.dev_name}, wheel type: {self.tiers_type}"
+               f" device name: {self.dev_name}, wheel type: {self.tiers_type}"
 
 
-car = Car("My car", 40, 4, 40, "Diesel", 150, "Sedan", 4 )
-print(car.show_info)
-car.run()
-bus = Bus("Double decker", 100, 6, 100, "Induction", 150, 40)
-print(bus.show_info)
-bus.run()
-bus.change_tiers()
-print(bus.show_info)
-if Transport.is_winter():
-    print("Time to change tiers type to Winter")
-else:
-    print("Time to change tiers type to Summer")
+class FlyingCar(FlyingTransport, Car):
+    """
+    Class describes flying car
+    Here we have diamond problem with methods run in Car class and FlyingTransport
+    """
 
-special_auto = SpecialAuto("Mixer", 100, 6, 100, "Diesel", 150, 6,"Synchronous", 120, 1000, 1000,
-                           "Concrete mixer")
-special_auto.dev_start()
-special_auto.dev_stop()
-print(special_auto.show_info)
-special_auto.start_engine()
+    def __init__(self, name: str, fuel_tank_vol: int, wheels_count: int,
+                 fuel_tank_level: int, engine_type: str, engine_power: int, body_type: str,
+                 engine_cylinder_count: int):
+        Car.__init__(self, name, fuel_tank_vol, wheels_count, fuel_tank_level, engine_type, engine_power,
+                     body_type, engine_cylinder_count)
+        FlyingTransport.__init__(self)
+
+    def run(self):
+        FlyingTransport.run(self)
+        Car.run(self)
 
 
+# car = Car("My car", 40, 4, 40, "Diesel", 150, "Sedan", 4)
+# print(car.show_info)
+# car.run()
+# bus = Bus("Double decker", 100, 6, 100, "Induction", 150, 40)
+# print(bus.show_info)
+# bus.run()
+# bus.start_engine()
+# bus.change_tiers()
+# print(bus.show_info)
+# if Transport.is_winter():
+#     print("Time to change tiers type to Winter")
+# else:
+#     print("Time to change tiers type to Summer")
+#
+# special_auto = SpecialAuto("Mixer", 100, 6, 100, "Diesel", 150, 6, "Concrete mixer")
+# special_auto.dev_start()
+# special_auto.dev_stop()
+# print(special_auto.show_info)
+# special_auto.start_engine()
+
+jet = Airplane("HellCat", 2000, 3, 2000, "Gasoline", 2000, 18)
+jet.run()
+
+nitra = FlyingCar("Nitra", 200, 4, 200, "gasoline", 200, "coupe", 6)
+nitra.run()
 
