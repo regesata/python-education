@@ -217,9 +217,6 @@ class SentenceIterator:
         return next(self.sen)
 
 
-
-
-
 a = Sentence("Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
 print(a._words())
 print(a[1:4])
@@ -229,9 +226,8 @@ print(next(a))
 print(next(a))
 
 word_iter = SentenceIterator("Lorem Ipsum is simply dummy text.")
-for ind in iter(word_iter):
-    print(ind)
+for item in iter(word_iter):
+    print(item)
 
 print(next(word_iter))
 print(next(word_iter))
-
