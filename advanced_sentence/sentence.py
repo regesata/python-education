@@ -208,21 +208,30 @@ class SentenceIterator:
     """Iterator class for Sentence class container"""
 
     def __init__(self, sentence: str):
-        self.sentence = sentence
+        self.sen = Sentence(sentence)
 
     def __iter__(self):
-        return Sentence(self.sentence)
+        return self.sen
+
+    def __next__(self):
+        return next(self.sen)
+
+
+
 
 
 a = Sentence("Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
-
-for i in a:
-    print(i)
+print(a._words())
 print(a[1:4])
 print(a.words)
 print(a.other_chars)
-
+print(next(a))
+print(next(a))
 
 word_iter = SentenceIterator("Lorem Ipsum is simply dummy text.")
-for a in word_iter:
-    print(a)
+for ind in iter(word_iter):
+    print(ind)
+
+print(next(word_iter))
+print(next(word_iter))
+
