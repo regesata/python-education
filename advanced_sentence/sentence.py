@@ -133,10 +133,7 @@ class Sentence:
         self.curr_pos = 0
 
     def __iter__(self):
-        return self
-
-    def __next__(self):
-        return next(self._words())
+        return SentenceIterator(self.sentence)
 
     def __len__(self):
         return self._words_count
@@ -204,6 +201,7 @@ class Sentence:
 
         return curr_word
 
+
 class SentenceIterator:
     """Iterator class for Sentence class container"""
 
@@ -211,10 +209,10 @@ class SentenceIterator:
         self.sen = Sentence(sentence)
 
     def __iter__(self):
-        return self.sen
+        return self.sen.__iter__()
 
     def __next__(self):
-        return next(self.sen)
+        return next(self.sen._words())
 
 
 a = Sentence("Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
@@ -222,12 +220,13 @@ print(a._words())
 print(a[1:4])
 print(a.words)
 print(a.other_chars)
-print(next(a))
-print(next(a))
+for wo in a:
+    print(wo)
+
 
 word_iter = SentenceIterator("Lorem Ipsum is simply dummy text.")
-for item in iter(word_iter):
-    print(item)
-
+for z in word_iter:
+    print(z)
+print(next(word_iter))
 print(next(word_iter))
 print(next(word_iter))
