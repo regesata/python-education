@@ -7,7 +7,7 @@ import abc
 import datetime
 import sys
 
-from abc import ABC
+
 
 
 class Order:
@@ -26,10 +26,10 @@ class Order:
         order state, True if ready, False fi not ready
     """
 
-    def __init__(self, dishes: list, adress: str):
+    def __init__(self, dishes: list, address: str):
         """Order constructor"""
         self.chosen_dishes = dishes
-        self.address = adress
+        self.address = address
         self.is_ready = False
         self.ready_dishes = []
 
@@ -103,8 +103,7 @@ class Employee(abc.ABC):
         """
         if key == "salary" and value <= 0:
             raise ValueError( "Salary cant be negative or zero!")
-        else:
-            self.__dict__[key] = value
+        self.__dict__[key] = value
 
     def raise_salary(self, amount: float):
         """
@@ -113,6 +112,9 @@ class Employee(abc.ABC):
         :return: None
         """
         self._salary += amount
+
+    def __str__(self):
+        return f"{self._name}, {self._sex}, {self._d_o_b}, {self._salary}"
 
 
 class ServiceMan(abc.ABC):
@@ -166,6 +168,7 @@ class ServiceMan(abc.ABC):
 
     @abc.abstractmethod
     def send_to_kitchen(self):
+        """Must be defines in child classes"""
         ...
 
 
@@ -327,6 +330,7 @@ class Bartender(Employee, ServiceMan):
         return order
 
     def return_to_client(self):
+        """Mix order and return ready order"""
         order = self.orders.pop()
         return self._mix_drink(order)
 
@@ -367,6 +371,7 @@ class ClientManager(Employee, ServiceMan):
         return self.b_orders.pop()
 
     def take_bar_order(self, order: Order):
+        """Takes bar order from client"""
         self.b_orders.append(self.correct_order(order))
 
     def take_from_bar(self, order: Order):
@@ -451,6 +456,12 @@ class DeliveryService:
         self.manager = manager
         self.courier = courier
 
+    def __str__(self):
+        ret_str = str(self.manager) + " "
+        ret_str += str(self.courier)
+        return ret_str
+
+
 
 class Client(Customer):
     """
@@ -520,8 +531,7 @@ class DistantClient(Customer):
         self.dishes = order
 
 
-
-"""Create and setup console logging"""
+#  Create and setup console logging
 logger = logging.getLogger("restaurant")
 c_handler = logging.StreamHandler(stream=sys.stdout)
 c_formatter = logging.Formatter("%(name)s - %(message)s ")
@@ -531,82 +541,78 @@ logger.addHandler(c_handler)
 logger.setLevel(logging.INFO)
 
 
-dishes = ["steak", "pasta", "souse"]
-menu = Menu(dishes)
-logger.info(f"Creates menu with {dishes}")
+positions = ["steak", "pasta", "souse"]
+kitchen_menu = Menu(positions)
+logger.info("Creates menu with %s", positions)
 drinks = ["beer", "whiskey", "mojito", "pina colada"]
-b_menu = Menu(drinks)
-logger.info(f"Creates menu for bar with {drinks}")
-waiter = Waiter("Bob", datetime.datetime(1990,2,10), "m", "+1002265", 7750, menu)
+bar_menu = Menu(drinks)
+logger.info("Creates menu for bar with %s", drinks)
+waiter = Waiter("Bob", datetime.datetime(1990,2,10), "m", "+1002265", 7750, kitchen_menu)
 
-bartender = Bartender("Joe", datetime.datetime(1991,12,13), "m", "+1003587",79000, b_menu)
+bartender = Bartender("Joe", datetime.datetime(1991,12,13), "m", "+1003587",79000, bar_menu)
 
 kitchen = Kitchen()
 
-cl_manager = ClientManager("Lisa", datetime.datetime(2000, 8, 17), "f", "+1005689", 8000, menu, b_menu)
-courier = Courier("Jack", datetime.datetime(2005, 7, 30), "m", "+1007856", 6000)
-d_service = DeliveryService(cl_manager, courier)
+cl_manager = ClientManager("Lisa", datetime.datetime(2000, 8, 17),
+                           "f", "+1005689", 8000, kitchen_menu, bar_menu)
+d_courier = Courier("Jack", datetime.datetime(2005, 7, 30), "m", "+1007856", 6000)
+d_service = DeliveryService(cl_manager, d_courier)
 
 
 guest = Client("Tom", "5")
 d_client = DistantClient("Sara", "Evergreen st, 1")
-order = guest.create_order(waiter.show_menu(), 2)
-logger.info(f"Guest creates order with: {order}")
-waiter.take_order(order)
-logger.info(f"Waiter takes order {order}")
+ordr = guest.create_order(waiter.show_menu(), 2)
+logger.info("Guest creates order with: %s", ordr.__repr__())
+waiter.take_order(ordr)
+logger.info("Waiter takes order %s", ordr)
 kitchen.take_orders(waiter.send_to_kitchen())
-logger.info(f"Waiter send order {order} to kitchen")
+logger.info("Waiter send order %s to kitchen", ordr)
 kitchen.prepare_order()
-logger.info(f"Kitchen cooks...")
+logger.info("Kitchen cooks...")
 waiter.take_order(kitchen.back_ready_order())
-logger.info(f"Kitchen returns ready order to waiter: {waiter.ready_order}")
+logger.info("Kitchen returns ready order to waiter: %s", waiter.ready_order)
 guest.receive_order(waiter.serve_client())
-logger.info(f"Waiter serves client. It return {guest.dishes} ")
-logger.info(f"Client {guest.name} decided go to bar and make some order")
+logger.info("Waiter serves client. It return %s", guest.dishes)
+logger.info("Client %s decided go to bar and make some order", guest.name)
 b_order = guest.create_order(bartender.show_menu(), 1)
-logger.info(f"Guest make order {b_order}")
+logger.info("Guest make order %s", b_order)
 bartender.take_order(b_order)
-logger.info(f"Bartender takes order {bartender.orders}")
+logger.info("Bartender takes order %s", bartender.orders)
 guest.receive_order(bartender.return_to_client())
-logger.info(f"Client receive drinks {guest.dishes}")
+logger.info("Client receive drinks %s", guest.dishes)
 
-logger.info(f">>>>>>>Distant client situation")
+logger.info(">>>>>>>Distant client situation")
 #  Distant client situation
 kitchen_menu = d_service.manager.show_menu()
 bar_menu = d_service.manager.show_bar_menu()
 k_order = d_client.create_order(kitchen_menu, 2)
-logger.info(f"Distant client maks order from kitchen menu {k_order}")
+logger.info("Distant client maks order from kitchen menu %s", k_order)
 d_service.manager.take_order(k_order)
-logger.info(f"Manager takes order {d_service.manager.orders}")
+logger.info("Manager takes order %s", d_service.manager.orders)
 b_order = d_client.create_order(bar_menu, 1)
-logger.info(f"Distant client maks order from bar menu {b_order}")
+logger.info("Distant client maks order from bar menu %s", b_order)
 d_service.manager.take_bar_order(b_order)
-logger.info(f"Manager takes  bar order {d_service.manager.b_orders}")
+logger.info("Manager takes  bar order %s", d_service.manager.b_orders)
 kitchen.take_orders(d_service.manager.send_to_kitchen())
-logger.info(f"Manager send order to kitchen")
+logger.info("Manager send order to kitchen")
 kitchen.prepare_order()
-logger.info(f"Kitchen cooks...")
+logger.info("Kitchen cooks...")
 d_service.manager.take_order(kitchen.back_ready_order())
-logger.info(f"Kitchen returns ready order to waiter: {d_service.manager.ready_order}")
+logger.info("Kitchen returns ready order to waiter: %s",
+            d_service.manager.ready_order)
 b_order = d_service.manager.send_to_bar()
-logger.info(f"Manager send order {b_order} to bar")
+logger.info("Manager send order %s to bar", b_order)
 bartender.take_order(b_order)
-logger.info(f"Bartender takes order {bartender.orders}")
+logger.info("Bartender takes order %s", bartender.orders)
 ready_bar_order = bartender.return_to_client()
-logger.info(f"Bartender returns order {ready_bar_order}")
+logger.info("Bartender returns order %s", ready_bar_order)
 d_service.manager.take_from_bar(ready_bar_order)
-logger.info(f"Manager  takes ready bar order {d_service.manager.ready_bar_order}")
+logger.info("Manager  takes ready bar order %s", d_service.manager.ready_bar_order)
 d_service.manager.pac_order()
-logger.info(f"Manager  packs two orders together order {d_service.manager.ready_order}")
+logger.info("Manager  packs two orders together order %s", d_service.manager.ready_order)
 d_service.courier.take_ready_order(d_service.manager.return_to_courier())
-logger.info(f"Manager returns order to courier {d_service.courier.package}")
+logger.info("Manager returns order to courier %s", d_service.courier.package)
 d_client.receive_order(d_service.courier.delivery_to_client())
-logger.info(f"Courier returns order to client {d_service.courier.package}\n"
-            f" Client takes an order {d_client.dishes}")
-
-
-
-
-
-
-
+logger.info("Courier returns order to client %s\n"\
+            " Client takes an order %s",
+            d_service.courier.package, d_client.dishes)
