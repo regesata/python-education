@@ -4,3 +4,8 @@ __pycache__
 *.pyc
 .pytest_cache
 .coverage
+.*
+!.env.list
+pagila-insert-data.sql
+pagila-master
+pagila-schema.sql
